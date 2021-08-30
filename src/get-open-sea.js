@@ -157,14 +157,15 @@ const genReturnObj = (collections) => {
   return returnObj
 }
 
-export default async function getOpenSea() {
+export default async function getOpenSea(withCache = null) {
   let cache = JSON.parse(await redis.get("cache"))
   let result = {}
   let start = Date.now();
 
-  // for now, only use cache on development so that I don't have to wait forever for site to load
+  // for now, only use cache on development or if withCache flag is set
+  // so that I don't have to wait forever for site to load when testing code
   // cache = null
-  if (cache && process.env.NODE_ENV == 'development') {
+  if (cache && (process.env.NODE_ENV == 'development' || withCache)) {
      console.log("loading from cache")
 
      result.data = cache
