@@ -4,8 +4,8 @@ import {useState} from 'react'
 // next
 import Head from 'next/head'
 
-// pull from external sources
-import getOpenSea from '../get-open-sea';
+// external
+import absoluteUrl from "next-absolute-url"
 
 // components
 import AllCollectionsTable from "../components/all-collections-table"
@@ -16,25 +16,30 @@ import TopAd from "../components/top-ad"
 import TopListCard from "../components/top-list-card"
 import SearchBar from "../components/search-bar"
 
-const NEWEST_COLLECTIONS_PER_ROW = 4
+const COLLECTIONS_PER_ROW = 4
+const COLLECTION_TOTAL_NUM = 12
+
+// import '../styles/index.module.scss';
+
 const fetcher = url => fetch(url).then(res => res.json());
 
-export async function getStaticProps(context) {
-  const data = await getOpenSea()
+export async function getServerSideProps(context) {
+  const { origin } = absoluteUrl(context.req)
+  const apiURL = `${origin}/api/open-sea`
+  const data = await fetcher(apiURL)
 
   return { props: data}
 }
 
 export default function Home(props) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [allCollections, setAllCollections] = useState(props.allCollections)
 
   function editSearchTerm(e) {
     setSearchTerm(e.target.value)
   }
 
   function searchByName() {
-    return allCollections.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    return props.allCollections.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
   }
 
   return (
@@ -51,8 +56,8 @@ export default function Home(props) {
             {/* group of all collection cards */}
     				<div className="flex flex-row flex-wrap justify-around">
               {
-                [...Array(props.newestCollections.length / NEWEST_COLLECTIONS_PER_ROW).keys()].map((i) => {
-                  const dataForGroup = props.newestCollections.slice(i * NEWEST_COLLECTIONS_PER_ROW, (i+1) * NEWEST_COLLECTIONS_PER_ROW);
+                [...Array(COLLECTION_TOTAL_NUM / COLLECTIONS_PER_ROW).keys()].map((i) => {
+                  const dataForGroup = props.allCollections.slice(i * COLLECTIONS_PER_ROW, (i+1) * COLLECTIONS_PER_ROW);
                   const insertAd = (i % 2) == 0;
 
                   if (dataForGroup.length) {
